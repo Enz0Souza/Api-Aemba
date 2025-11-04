@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import multer from "multer";
 import { fileURLToPath } from "url";
-import newsRoutes from "./routes/newroutes.js";
+import newsRoutes from "./newsRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 10000;
