@@ -7,9 +7,7 @@ import { fileURLToPath } from "url";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
 
-// Corrige o __dirname para ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -54,12 +52,12 @@ function saveData(data) {
   fs.writeFileSync(FILE, JSON.stringify(data, null, 2), "utf-8");
 }
 
-// 🔹 GET — retorna todas as notícias
+//retorna todas as notícias
 app.get("/news", (req, res) => {
   res.json(readData());
 });
 
-// 🔹 POST — cria uma nova notícia
+// cria uma nova notícia
 app.post("/news", upload.single("image"), (req, res) => {
   try {
     const { title, subtitle, paragraphs, useCarousel } = req.body;
@@ -90,7 +88,7 @@ app.post("/news", upload.single("image"), (req, res) => {
   }
 });
 
-// 🔹 GET — retorna notícia por ID
+//retorna notícia por ID
 app.get("/news/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const news = readData();
@@ -100,10 +98,10 @@ app.get("/news/:id", (req, res) => {
     return res.status(404).json({ message: "Notícia não encontrada" });
   }
 
-  res.json(item); // envia apenas o item
+  res.json(item); 
 });
 
-// 🔹 DELETE — remove notícia por ID
+//remove notícia por ID
 app.delete("/news/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const news = readData();
@@ -124,7 +122,7 @@ app.delete("/news/:id", (req, res) => {
   res.json({ message: "Notícia deletada com sucesso!" });
 });
 
-// Inicia o servidor
+// 🔹 Inicia o servidor
 app.listen(PORT, () => {
   console.log(`✅ API rodando em http://localhost:${PORT}`);
 });
