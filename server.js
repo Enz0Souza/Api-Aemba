@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import multer from "multer";
 import { fileURLToPath } from "url";
+import newsRoutes from "./routes/newroutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -21,14 +22,14 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 app.use(
   cors({
     origin: [
-      "http://localhost:4200",        
-      "https://aemba.vercel.app/",  
+      "http://localhost:4200",      
+      "https://aemba.vercel.app",   
     ],
   })
 );
 
 app.use(express.json());
-app.use("/uploads", express.static(UPLOADS_DIR));
+app.use("/uploads", express.static(UPLOADS_DIR)); 
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
@@ -55,6 +56,10 @@ function readData() {
 function saveData(data) {
   fs.writeFileSync(FILE, JSON.stringify(data, null, 2), "utf-8");
 }
+
+app.get("/", (req, res) => {
+  res.send("🚀 API AEMBA está online e funcionando!");
+});
 
 app.get("/news", (req, res) => {
   res.json(readData());
@@ -126,10 +131,8 @@ app.delete("/news/:id", (req, res) => {
   res.json({ message: "Notícia deletada com sucesso!" });
 });
 
-app.get("/", (req, res) => {
-  res.send("🚀 API AEMBA está online e funcionando!");
-});
+app.use("/news-advanced", newsRoutes);
 
 app.listen(PORT, () => {
-  console.log(`✅ API rodando na porta ${PORT}`);
+  console.log(`✅ API AEMBA rodando na porta ${PORT}`);
 });
