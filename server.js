@@ -15,17 +15,15 @@ const __dirname = path.dirname(__filename);
 const FILE = path.join(__dirname, "news.json");
 const UPLOADS_DIR = path.join(__dirname, "uploads");
 
-// 🔧 Garantir que a pasta de uploads exista
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
-// ✅ CORS configurado corretamente
 app.use(
   cors({
     origin: [
-      "https://aemba.vercel.app",  // domínio do site hospedado
-      "http://localhost:4200",     // ambiente local
+      "https://aemba.vercel.app",  
+      "http://localhost:4200",     
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -33,13 +31,12 @@ app.use(
   })
 );
 
-// 🔁 Garante resposta a requisições preflight (OPTIONS)
-app.options("*", cors());
+app.options(/.*/, cors());
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 🔗 Servir imagens diretamente
 app.use("/uploads", express.static(UPLOADS_DIR));
 
 const storage = multer.diskStorage({
@@ -58,7 +55,6 @@ const upload = multer({
   },
 });
 
-// 📂 Funções auxiliares para ler e salvar dados
 function readData() {
   if (!fs.existsSync(FILE)) return [];
   const data = fs.readFileSync(FILE, "utf-8");
@@ -69,17 +65,14 @@ function saveData(data) {
   fs.writeFileSync(FILE, JSON.stringify(data, null, 2), "utf-8");
 }
 
-// 🟢 Rota principal
 app.get("/", (req, res) => {
   res.send("🚀 API AEMBA está online e funcionando!");
 });
 
-// 📜 Listar notícias
 app.get("/news", (req, res) => {
   res.json(readData());
 });
 
-// 📰 Criar notícia
 app.post("/news", upload.single("image"), (req, res) => {
   try {
     const { title, subtitle, paragraphs, useCarousel } = req.body;
@@ -113,7 +106,6 @@ app.post("/news", upload.single("image"), (req, res) => {
   }
 });
 
-// 📄 Obter notícia por ID
 app.get("/news/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const news = readData();
@@ -126,7 +118,6 @@ app.get("/news/:id", (req, res) => {
   res.json(item);
 });
 
-// ❌ Deletar notícia
 app.delete("/news/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const news = readData();
@@ -147,10 +138,8 @@ app.delete("/news/:id", (req, res) => {
   res.json({ message: "Notícia deletada com sucesso!" });
 });
 
-// 🧩 Rotas avançadas
 app.use("/news-advanced", newsRoutes);
 
-// 🚀 Iniciar servidor
 app.listen(PORT, () => {
   console.log(`✅ API AEMBA rodando na porta ${PORT}`);
 });
