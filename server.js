@@ -15,21 +15,32 @@ const __dirname = path.dirname(__filename);
 const FILE = path.join(__dirname, "news.json");
 const UPLOADS_DIR = path.join(__dirname, "uploads");
 
+// 🔧 Garantir que a pasta de uploads exista
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
+// ✅ CORS configurado corretamente
 app.use(
   cors({
     origin: [
-      "http://localhost:4200",      
-      "https://aemba.vercel.app",   
+      "https://aemba.vercel.app",  // domínio do site hospedado
+      "http://localhost:4200",     // ambiente local
     ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
 
+// 🔁 Garante resposta a requisições preflight (OPTIONS)
+app.options("*", cors());
+
 app.use(express.json());
-app.use("/uploads", express.static(UPLOADS_DIR)); 
+app.use(express.urlencoded({ extended: true }));
+
+// 🔗 Servir imagens diretamente
+app.use("/uploads", express.static(UPLOADS_DIR));
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
@@ -47,6 +58,7 @@ const upload = multer({
   },
 });
 
+// 📂 Funções auxiliares para ler e salvar dados
 function readData() {
   if (!fs.existsSync(FILE)) return [];
   const data = fs.readFileSync(FILE, "utf-8");
@@ -57,22 +69,23 @@ function saveData(data) {
   fs.writeFileSync(FILE, JSON.stringify(data, null, 2), "utf-8");
 }
 
+// 🟢 Rota principal
 app.get("/", (req, res) => {
   res.send("🚀 API AEMBA está online e funcionando!");
 });
 
+// 📜 Listar notícias
 app.get("/news", (req, res) => {
   res.json(readData());
 });
 
+// 📰 Criar notícia
 app.post("/news", upload.single("image"), (req, res) => {
   try {
     const { title, subtitle, paragraphs, useCarousel } = req.body;
 
     if (!title) {
-      return res
-        .status(400)
-        .json({ message: "O campo 'title' é obrigatório." });
+      return res.status(400).json({ message: "O campo 'title' é obrigatório." });
     }
 
     const news = readData();
@@ -90,15 +103,17 @@ app.post("/news", upload.single("image"), (req, res) => {
     news.push(newItem);
     saveData(news);
 
-    res
-      .status(201)
-      .json({ message: "Notícia criada com sucesso!", news: newItem });
+    res.status(201).json({
+      message: "Notícia criada com sucesso!",
+      news: newItem,
+    });
   } catch (err) {
     console.error("Erro ao criar notícia:", err);
     res.status(500).json({ message: "Erro interno ao criar notícia." });
   }
 });
 
+// 📄 Obter notícia por ID
 app.get("/news/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const news = readData();
@@ -111,6 +126,7 @@ app.get("/news/:id", (req, res) => {
   res.json(item);
 });
 
+// ❌ Deletar notícia
 app.delete("/news/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const news = readData();
@@ -131,8 +147,10 @@ app.delete("/news/:id", (req, res) => {
   res.json({ message: "Notícia deletada com sucesso!" });
 });
 
+// 🧩 Rotas avançadas
 app.use("/news-advanced", newsRoutes);
 
+// 🚀 Iniciar servidor
 app.listen(PORT, () => {
   console.log(`✅ API AEMBA rodando na porta ${PORT}`);
 });
